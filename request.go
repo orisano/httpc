@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewRequest(ctx context.Context, method, rawurl string, opts ...Option) (*http.Request, error) {
+func NewRequest(ctx context.Context, method, rawurl string, opts ...PrepareOption) (*http.Request, error) {
 	if ctx == nil {
 		return nil, errors.New("missing ctx")
 	}
@@ -21,11 +21,11 @@ func NewRequest(ctx context.Context, method, rawurl string, opts ...Option) (*ht
 		return nil, errors.New("missing rawurl")
 	}
 
-	options := &Options{
+	options := &PrepareOptions{
 		Header:  make(http.Header),
 		Queries: make(url.Values),
 	}
-	if err := ApplyOption(options, opts...); err != nil {
+	if err := ApplyPrepareOption(options, opts...); err != nil {
 		return nil, errors.Wrap(err, "failed to apply option")
 	}
 
