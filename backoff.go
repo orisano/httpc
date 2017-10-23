@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-type Backoff interface {
+type BackoffStrategy interface {
 	Backoff(attempt uint) time.Duration
 }
 
 type exponentialBackoff struct{}
 
-func ExponentialBackoff() Backoff {
+func ExponentialBackoff() BackoffStrategy {
 	return &exponentialBackoff{}
 }
 
@@ -23,7 +23,7 @@ type truncatedExponentialBackoff struct {
 	maxAttempt uint
 }
 
-func TruncatedExponentialBackoff(maxAttempt uint) Backoff {
+func TruncatedExponentialBackoff(maxAttempt uint) BackoffStrategy {
 	return &truncatedExponentialBackoff{maxAttempt}
 }
 
@@ -39,7 +39,7 @@ type constantBackoff struct {
 	duration time.Duration
 }
 
-func ConstantBackoff(duration time.Duration) Backoff {
+func ConstantBackoff(duration time.Duration) BackoffStrategy {
 	return &constantBackoff{duration}
 }
 
