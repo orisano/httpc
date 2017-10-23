@@ -10,9 +10,9 @@ import (
 )
 
 type Options struct {
-	Body   io.Reader
-	Header http.Header
-	Params url.Values
+	Body    io.Reader
+	Header  http.Header
+	Queries url.Values
 
 	EnforceContentLength bool
 }
@@ -84,9 +84,9 @@ func WithXML(data interface{}) Option {
 	}
 }
 
-func AddHeader(key, value string) Option {
+func AddHeaderField(name, value string) Option {
 	return func(o *Options) error {
-		o.Header.Add(key, value)
+		o.Header.Add(name, value)
 		return nil
 	}
 }
@@ -98,16 +98,16 @@ func WithHeader(header http.Header) Option {
 	}
 }
 
-func AddParams(key, value string) Option {
+func AddQuery(key, value string) Option {
 	return func(o *Options) error {
-		o.Params.Add(key, value)
+		o.Queries.Add(key, value)
 		return nil
 	}
 }
 
-func WithParams(params url.Values) Option {
+func WithQueries(queries url.Values) Option {
 	return func(o *Options) error {
-		o.Params = params
+		o.Queries = queries
 		return nil
 	}
 }

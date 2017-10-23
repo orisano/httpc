@@ -22,20 +22,20 @@ func NewRequest(ctx context.Context, method, rawurl string, opts ...Option) (*ht
 	}
 
 	options := &Options{
-		Header: make(http.Header),
-		Params: make(url.Values),
+		Header:  make(http.Header),
+		Queries: make(url.Values),
 	}
 	if err := ApplyOption(options, opts...); err != nil {
 		return nil, errors.Wrap(err, "failed to apply option")
 	}
 
-	if len(options.Params) > 0 {
+	if len(options.Queries) > 0 {
 		u, err := url.ParseRequestURI(rawurl)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse url: %s", rawurl)
 		}
 		q := u.Query()
-		addValues(q, options.Params)
+		addValues(q, options.Queries)
 		u.RawQuery = q.Encode()
 		rawurl = u.String()
 	}
