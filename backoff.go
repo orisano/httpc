@@ -16,7 +16,7 @@ func ExponentialBackoff() BackoffStrategy {
 }
 
 func (*exponentialBackoff) Backoff(attempt uint) time.Duration {
-	return time.Duration(rand.Float64()*(1<<attempt)) * time.Second
+	return time.Duration(rand.Int63n((1 << attempt) * int64(time.Second)))
 }
 
 type truncatedExponentialBackoff struct {
@@ -32,7 +32,7 @@ func (b *truncatedExponentialBackoff) Backoff(attempt uint) time.Duration {
 	if n > b.maxAttempt {
 		n = b.maxAttempt
 	}
-	return time.Duration(rand.Float64()*(1<<n)) * time.Second
+	return time.Duration(rand.Int63n((1 << n) * int64(time.Second)))
 }
 
 type constantBackoff struct {
