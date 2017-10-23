@@ -58,7 +58,7 @@ func NewRequest(ctx context.Context, method, rawurl string, opts ...Option) (*ht
 	}
 	req, err := http.NewRequest(method, rawurl, options.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to http request construct")
+		return nil, err
 	}
 	if options.EnforceContentLength {
 		req.ContentLength = contentLength
