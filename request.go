@@ -3,7 +3,7 @@ package httpc
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -48,12 +48,13 @@ func NewRequest(ctx context.Context, method, rawurl string, opts ...RequestOptio
 		if s, ok := options.Body.(sizer); ok {
 			contentLength = s.Size()
 		} else {
-			b, err := ioutil.ReadAll(options.Body)
+			b := new(bytes.Buffer)
+			n, err := io.Copy(b, options.Body)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to read body")
 			}
-			contentLength = int64(len(b))
-			options.Body = bytes.NewReader(b)
+			contentLength = n
+			options.Body = b
 		}
 	}
 	req, err := http.NewRequest(method, rawurl, options.Body)
