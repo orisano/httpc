@@ -1,13 +1,14 @@
 package httpc
 
 import (
-	"bytes"
-	"io"
 	"net/http"
-	"strings"
+	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 )
+
+var TimeNow func() time.Time = time.Now
 
 func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.Response, error) {
 	if client == nil {
@@ -28,34 +29,31 @@ func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.R
 
 	attempt := uint(0)
 	for {
+		req.Close = false
 		resp, err := client.Do(req)
 		if err != nil {
 			if !isTimeout(err) && !isTemporary(err) {
 				return nil, err
 			}
 		} else {
-
-		}
-		if err == nil {
+			if !isTemporaryStatus(resp.StatusCode) {
+				return resp, nil
+			}
 			resp.Body.Close()
-
 		}
 		attempt++
 		if attempt >= options.MaxAttempt {
 			return nil, errors.New("max attempt exceeded")
 		}
-
+		if err == nil && len(resp.Header.Get("Retry-After")) > 0 {
+			d, err := parseRetryAfter(resp.Header.Get("Retry-After"))
+			if err == nil {
+				time.Sleep(d)
+				continue
+			}
+		}
+		time.Sleep(options.BackoffStrategy.Backoff(attempt))
 	}
-}
-
-func isAutoReuse(r io.Reader) bool {
-	switch r.(type) {
-	case *bytes.Buffer:
-	case *bytes.Reader:
-	case *strings.Reader:
-		return true
-	}
-	return false
 }
 
 type temporary interface {
@@ -83,7 +81,18 @@ func isTemporaryStatus(status int) bool {
 	case http.StatusServiceUnavailable:
 	case http.StatusGatewayTimeout:
 	case http.StatusRequestTimeout:
+	case http.StatusTooManyRequests:
 		return true
 	}
 	return false
+}
+
+func parseRetryAfter(ra string) (time.Duration, error) {
+	if d, err := http.ParseTime(ra); err == nil {
+		return d.Sub(TimeNow()), nil
+	}
+	if s, err := strconv.ParseUint(ra, 10, 32); err == nil {
+		return time.Duration(s) * time.Second, nil
+	}
+	return time.Duration(0), errors.Errorf("Retry-After header invalid format: %v", ra)
 }
