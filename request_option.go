@@ -1,6 +1,7 @@
 package httpc
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -60,12 +61,11 @@ func WithForm(params url.Values) RequestOption {
 func WithJSON(data interface{}) RequestOption {
 	return func(o *RequestOptions) error {
 		o.Header.Set("Content-Type", "application/json")
-		r, w := io.Pipe()
-		go func() {
-			defer w.Close()
-			json.NewEncoder(w).Encode(data)
-		}()
-		o.Body = r
+		var b bytes.Buffer
+		if err := json.NewEncoder(&b).Encode(data); err != nil {
+			return err
+		}
+		o.Body = &b
 		return nil
 	}
 }
@@ -73,13 +73,11 @@ func WithJSON(data interface{}) RequestOption {
 func WithXML(data interface{}) RequestOption {
 	return func(o *RequestOptions) error {
 		o.Header.Set("Content-Type", "application/xml; charset=\"UTF-8\"")
-		r, w := io.Pipe()
-		go func() {
-			defer w.Close()
-			w.Write([]byte(xml.Header))
-			xml.NewEncoder(w).Encode(data)
-		}()
-		o.Body = r
+		var b bytes.Buffer
+		if err := xml.NewEncoder(&b).Encode(data); err != nil {
+			return err
+		}
+		o.Body = &b
 		return nil
 	}
 }
