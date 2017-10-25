@@ -48,13 +48,13 @@ func NewRequest(ctx context.Context, method, rawurl string, opts ...RequestOptio
 		if s, ok := options.Body.(sizer); ok {
 			contentLength = s.Size()
 		} else {
-			b := new(bytes.Buffer)
-			n, err := io.Copy(b, options.Body)
+			var b bytes.Buffer
+			n, err := io.Copy(&b, options.Body)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to read body")
 			}
 			contentLength = n
-			options.Body = b
+			options.Body = &b
 		}
 	}
 	req, err := http.NewRequest(method, rawurl, options.Body)
