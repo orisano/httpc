@@ -74,6 +74,7 @@ func WithXML(data interface{}) RequestOption {
 	return func(o *RequestOptions) error {
 		o.Header.Set("Content-Type", "application/xml; charset=\"UTF-8\"")
 		var b bytes.Buffer
+		b.WriteString(xml.Header)
 		if err := xml.NewEncoder(&b).Encode(data); err != nil {
 			return err
 		}
