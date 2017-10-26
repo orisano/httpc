@@ -292,6 +292,21 @@ func TestNewRequest(t *testing.T) {
 				t.Errorf("unexpected ContentLength. expected: %v, got: %v", expected, got)
 			}
 		})
+
+		t.Run("Sizer", func(t *testing.T) {
+			expected := int64(1000)
+			b := &unreadableSizer{expected}
+			req, err := NewRequest(context.TODO(), http.MethodPut, rawurl,
+				WithBody(b),
+				EnforceContentLength,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := req.ContentLength; got != expected {
+				t.Errorf("unexpected ContentLength. expected: %v, got: %v", expected, got)
+			}
+		})
 	})
 
 	t.Run("OverridePattern", func(t *testing.T) {
@@ -425,6 +440,18 @@ type unreadable struct{}
 
 func (*unreadable) Read(p []byte) (n int, err error) {
 	return 0, errors.New("read failed")
+}
+
+type unreadableSizer struct {
+	size int64
+}
+
+func (u *unreadableSizer) Size() int64 {
+	return u.size
+}
+
+func (*unreadableSizer) Read(p []byte) (n int, err error) {
+	return 0, errors.New("failed")
 }
 
 type cantMarshalJSON struct{}
