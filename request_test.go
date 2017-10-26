@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -329,4 +330,111 @@ func TestNewRequest(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("NilContext", func(t *testing.T) {
+		req, err := NewRequest(nil, http.MethodGet, rawurl)
+		if err == nil {
+			t.Errorf("accept nil context")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("EmptyMethod", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), "", rawurl)
+		if err == nil {
+			t.Errorf("accept empty method")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("InvalidMethod", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), " ", rawurl)
+		if err == nil {
+			t.Error("accept invalid method")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("EmptyURL", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), http.MethodConnect, "")
+		if err == nil {
+			t.Errorf("accept empty url")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("InvalidURL", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), http.MethodDelete, "web.invalid",
+			AddQuery("parse", "fire"),
+		)
+		if err == nil {
+			t.Errorf("accept invalid url")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("UnreadableBody", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			WithBody(&unreadable{}),
+			EnforceContentLength,
+		)
+		if err == nil {
+			t.Errorf("read unreadable body")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("CantMarshalJSON", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			WithJSON(&cantMarshalJSON{}),
+		)
+		if err == nil {
+			t.Errorf("accept cant MarshalJSON")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+
+	t.Run("CantMarshalXML", func(t *testing.T) {
+		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			WithXML(&cantMarshalXML{}),
+		)
+		if err == nil {
+			t.Errorf("accept cant MarshalXML")
+		}
+		if req != nil {
+			t.Errorf("return invalid request")
+		}
+	})
+}
+
+type unreadable struct{}
+
+func (*unreadable) Read(p []byte) (n int, err error) {
+	return 0, errors.New("read failed")
+}
+
+type cantMarshalJSON struct{}
+
+func (*cantMarshalJSON) MarshalJSON() ([]byte, error) {
+	return nil, errors.New("cant")
+}
+
+type cantMarshalXML struct{}
+
+func (*cantMarshalXML) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	return errors.New("cant")
 }
