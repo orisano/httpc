@@ -74,6 +74,9 @@ func TestNewRequest(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		if got := req.Header.Get("Content-Type"); got != "application/x-www-form-urlencoded" {
+			t.Errorf("unexpected content-type. expected: application/x-www-form-urlencoded, got: %v", got)
+		}
 
 		req.ParseForm()
 		for _, key := range []string{"id", "password"} {
@@ -140,6 +143,9 @@ func TestNewRequest(t *testing.T) {
 		)
 		if err != nil {
 			t.Fatal(err)
+		}
+		if got := req.Header.Get("Content-Type"); got != `application/xml; charset="UTF-8"` {
+			t.Errorf(`unexpected content-type. expected: application/xml; charset="UTF-8", got: %v`, got)
 		}
 		b, err := ioutil.ReadAll(req.Body)
 		if err != nil {
