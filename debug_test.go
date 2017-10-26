@@ -14,17 +14,15 @@ func TestInjectDebugTransport(t *testing.T) {
 	send := `{"message": "hello"}`
 	response := `{"message": "world"}`
 
-	sendf, err := ioutil.TempFile("", "")
+	tf, err := ioutil.TempFile("", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer sendf.Close()
-	defer os.Remove(sendf.Name())
+	defer os.Remove(tf.Name())
+	defer tf.Close()
 
-	fmt.Fprint(sendf, send)
-	if err := sendf.Sync(); err != nil {
-		t.Fatal(err)
-	}
+	tf.WriteString(send)
+	tf.Sync()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +39,7 @@ func TestInjectDebugTransport(t *testing.T) {
 	s := httptest.NewServer(mux)
 	defer s.Close()
 
-	f, err := os.Open(sendf.Name())
+	f, err := os.Open(tf.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,5 +58,8 @@ func TestInjectDebugTransport(t *testing.T) {
 		if got := string(b); got != response {
 			t.Errorf("unexpected response body. expected: %v, got: %v", response, got)
 		}
+	}
+	if b.Len() == 0 {
+		t.Error("dump buffer size == 0")
 	}
 }
