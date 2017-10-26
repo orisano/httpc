@@ -9,6 +9,7 @@ import (
 )
 
 var TimeNow func() time.Time = time.Now
+var TimeSleep func(d time.Duration) = time.Sleep
 
 func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.Response, error) {
 	if client == nil {
@@ -48,11 +49,11 @@ func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.R
 		if err == nil && len(resp.Header.Get("Retry-After")) > 0 {
 			d, err := parseRetryAfter(resp.Header.Get("Retry-After"))
 			if err == nil {
-				time.Sleep(d)
+				TimeSleep(d)
 				continue
 			}
 		}
-		time.Sleep(options.BackoffStrategy.Backoff(attempt))
+		TimeSleep(options.BackoffStrategy.Backoff(attempt))
 	}
 }
 
