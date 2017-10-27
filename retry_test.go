@@ -50,7 +50,7 @@ func TestRetry(t *testing.T) {
 		}
 		defer resp.Body.Close()
 	})
-	t.Run("ErrorRetry", func(t *testing.T) {
+	t.Run("Retry", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, s.URL, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -61,6 +61,11 @@ func TestRetry(t *testing.T) {
 			MaxAttempt uint
 			IsError    bool
 		}{
+			{
+				Transport:  &errorTransport{fmt.Errorf("normal"), 1},
+				MaxAttempt: 10,
+				IsError:    true,
+			},
 			{
 				Transport:  &errorTransport{&timeoutError{}, 4},
 				MaxAttempt: 5,
@@ -80,6 +85,26 @@ func TestRetry(t *testing.T) {
 				Transport:  &errorTransport{&temporaryError{}, 10},
 				MaxAttempt: 10,
 				IsError:    true,
+			},
+			{
+				Transport:  &statusTransport{http.StatusInternalServerError, 10},
+				MaxAttempt: 15,
+				IsError:    false,
+			},
+			{
+				Transport:  &statusTransport{http.StatusBadGateway, 20},
+				MaxAttempt: 25,
+				IsError:    false,
+			},
+			{
+				Transport:  &statusTransport{http.StatusRequestTimeout, 10},
+				MaxAttempt: 15,
+				IsError:    false,
+			},
+			{
+				Transport:  &statusTransport{http.StatusTooManyRequests, 10},
+				MaxAttempt: 15,
+				IsError:    false,
 			},
 		}
 
