@@ -23,9 +23,7 @@ func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.R
 		BackoffStrategy: DefaultBackoffStrategy,
 	}
 	for _, opt := range opts {
-		if err := opt(options); err != nil {
-			return nil, errors.Wrap(err, "failed to apply option")
-		}
+		opt(options)
 	}
 
 	attempt := uint(0)
