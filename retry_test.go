@@ -1,6 +1,7 @@
 package httpc
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -130,6 +131,30 @@ func TestRetry(t *testing.T) {
 			}
 		}
 	})
+	t.Run("RetryAfter", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, s.URL, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, tc := range []string{"3000", "Wed, 21 Oct 2015 07:28:00 GMT"} {
+			resp, err := Retry(
+				&http.Client{
+					Transport: &retryAfterTransport{tc, 1},
+				},
+				req,
+				WithMaxAttempt(2),
+				WithBackoffStrategy(&panicBackoff{}),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := resp.StatusCode; got != http.StatusOK {
+				t.Errorf("unexpected status code. expected: %v, got: %v", resp.StatusCode, got)
+			}
+			resp.Body.Close()
+		}
+	})
 }
 
 type timeoutError struct{}
@@ -164,4 +189,47 @@ func (*temporaryError) Error() string {
 
 func (*temporaryError) Temporary() bool {
 	return true
+}
+
+type statusTransport struct {
+	code  int
+	count int
+}
+
+func (t *statusTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	resp, err := http.DefaultTransport.RoundTrip(r)
+	if err != nil {
+		return nil, err
+	}
+	if t.count > 0 {
+		if resp.StatusCode == http.StatusOK {
+			resp.StatusCode = t.code
+		}
+		t.count--
+	}
+	return resp, nil
+}
+
+type panicBackoff struct{}
+
+func (*panicBackoff) Backoff(attempt uint) time.Duration {
+	panic("panic")
+}
+
+type retryAfterTransport struct {
+	ra    string
+	count int
+}
+
+func (t *retryAfterTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	resp, err := http.DefaultTransport.RoundTrip(r)
+	if err != nil {
+		return nil, err
+	}
+	if t.count > 0 {
+		t.count--
+		resp.StatusCode = http.StatusTooManyRequests
+		resp.Header.Set("Retry-After", t.ra)
+	}
+	return resp, nil
 }
