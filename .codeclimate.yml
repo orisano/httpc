@@ -1,4 +1,5 @@
-engines:
+version: "2"
+plugins:
   gofmt:
     enabled: true
   govet:
@@ -6,9 +7,5 @@ engines:
   golint:
     enabled: true
 
-ratings:
-  paths:
-    - "**.go"
-
 exclude_paths:
-  - vendor/
+  - "vendor/"
