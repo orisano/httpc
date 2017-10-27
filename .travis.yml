@@ -18,4 +18,5 @@ script:
   - go test -coverprofile=c.out
 
 after_success:
-  - ./cc-test-reporter -t gocov
+  - ./cc-test-reporter format-coverage -t gocov
+  - ./cc-test-reporter upload-coverage
