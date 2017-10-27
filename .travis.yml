@@ -1,0 +1,21 @@
+env:
+  global:
+    - CC_TEST_REPORTER_ID=8f35879f546b1f56e8b41581fc8086ab88031279e86e100f0d4ff79f6d41a826
+
+language: go
+go:
+  - 1.9
+
+install:
+  - go get -u github.com/golang/dep/cmd/dep
+  - dep ensure
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+
+script:
+  - go test -coverprofile=c.out
+
+after_success:
+  - ./cc-test-reporter -t gocov
