@@ -50,7 +50,7 @@ func TestRetry(t *testing.T) {
 		}
 		defer resp.Body.Close()
 	})
-	t.Run("Retry", func(t *testing.T) {
+	t.Run("ErrorRetry", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, s.URL, nil)
 		if err != nil {
 			t.Fatal(err)
