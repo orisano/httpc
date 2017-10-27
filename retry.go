@@ -75,12 +75,13 @@ func isTimeout(err error) bool {
 
 func isTemporaryStatus(status int) bool {
 	switch status {
-	case http.StatusInternalServerError:
-	case http.StatusBadGateway:
-	case http.StatusServiceUnavailable:
-	case http.StatusGatewayTimeout:
-	case http.StatusRequestTimeout:
-	case http.StatusTooManyRequests:
+	case
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout,
+		http.StatusRequestTimeout,
+		http.StatusTooManyRequests:
 		return true
 	}
 	return false
