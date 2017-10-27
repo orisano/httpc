@@ -4,12 +4,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestRetry(t *testing.T) {
 	mux := http.NewServeMux()
 	s := httptest.NewServer(mux)
 	defer s.Close()
+
+	TimeSleep = func(d time.Duration) {}
 
 	t.Run("NilClient", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, s.URL, nil)
