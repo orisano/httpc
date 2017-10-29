@@ -78,3 +78,33 @@ func TestInjectDebugTransport(t *testing.T) {
 		}
 	})
 }
+
+func TestRemoveDebugTransport(t *testing.T) {
+	t.Run("NilClient", func(t *testing.T) {
+		err := RemoveDebugTransport(nil)
+		if err == nil {
+			t.Errorf("accept nil client")
+		}
+	})
+	t.Run("NoInjectedClient", func(t *testing.T) {
+		c := &http.Client{}
+		if err := RemoveDebugTransport(c); err != nil {
+			t.Error(err)
+		}
+	})
+	t.Run("PositiveCase", func(t *testing.T) {
+		rt := http.DefaultTransport
+		c := &http.Client{Transport: rt}
+		b := new(bytes.Buffer)
+
+		if err := InjectDebugTransport(c, b); err != nil {
+			t.Fatal(err)
+		}
+		if err := RemoveDebugTransport(c); err != nil {
+			t.Fatal(err)
+		}
+		if got := c.Transport; got != rt {
+			t.Errorf("unexpected transport. expected: %v, but got: %v", rt, got)
+		}
+	})
+}
