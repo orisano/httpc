@@ -51,3 +51,16 @@ func InjectDebugTransport(client *http.Client, w io.Writer) error {
 	client.Transport = &debugTransport{w: w, transport: original}
 	return nil
 }
+
+func RemoveDebugTransport(client *http.Client) error {
+	if client == nil {
+		return errors.New("missing client")
+	}
+	if client.Transport == nil {
+		return nil
+	}
+	if dt, ok := client.Transport.(*debugTransport); ok {
+		client.Transport = dt.transport
+	}
+	return nil
+}
