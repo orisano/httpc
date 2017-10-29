@@ -11,23 +11,23 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Client struct {
+type RequestBuilder struct {
 	baseURL *url.URL
 	header  http.Header
 }
 
-func NewClient(rawurl string, header http.Header) (*Client, error) {
+func NewRequestBuilder(rawurl string, header http.Header) (*RequestBuilder, error) {
 	u, err := url.ParseRequestURI(rawurl)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse")
 	}
-	return &Client{
+	return &RequestBuilder{
 		baseURL: u,
 		header:  header,
 	}, nil
 }
 
-func (c *Client) NewRequest(ctx context.Context, method, spath string, opts ...RequestOption) (*http.Request, error) {
+func (b *RequestBuilder) NewRequest(ctx context.Context, method, spath string, opts ...RequestOption) (*http.Request, error) {
 	if ctx == nil {
 		return nil, errors.New("missing ctx")
 	}
@@ -35,12 +35,12 @@ func (c *Client) NewRequest(ctx context.Context, method, spath string, opts ...R
 		return nil, errors.New("missing method")
 	}
 
-	u := *c.baseURL
+	u := *b.baseURL
 	if len(spath) > 0 {
 		u.Path = path.Join(u.Path, spath)
 	}
 
-	h := cloneHeader(c.header)
+	h := cloneHeader(b.header)
 	options := &RequestOptions{
 		Header:  h,
 		Queries: u.Query(),
