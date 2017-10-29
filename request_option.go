@@ -92,12 +92,39 @@ func AddHeaderField(name, value string) RequestOption {
 	}
 }
 
+func SetHeaderField(name, value string) RequestOption {
+	return func(o *RequestOptions) error {
+		o.Header.Set(name, value)
+		return nil
+	}
+}
+
 func WithHeader(header http.Header) RequestOption {
 	return func(o *RequestOptions) error {
 		if header == nil {
 			return errors.New("nil header")
 		}
 		o.Header = header
+		return nil
+	}
+}
+
+func AddHeader(header http.Header) RequestOption {
+	return func(o *RequestOptions) error {
+		for k, vs := range header {
+			for _, v := range vs {
+				o.Header.Add(k, v)
+			}
+		}
+		return nil
+	}
+}
+
+func SetHeader(header http.Header) RequestOption {
+	return func(o *RequestOptions) error {
+		for k, vs := range header {
+			o.Header.Set(k, vs[0])
+		}
 		return nil
 	}
 }
