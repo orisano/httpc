@@ -22,7 +22,11 @@ func (d *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		fmt.Fprintln(d.w, string(b))
 	}
 
-	resp, err := d.transport.RoundTrip(req)
+	rt := d.transport
+	if rt == nil {
+		rt = http.DefaultTransport
+	}
+	resp, err := rt.RoundTrip(req)
 	if err != nil {
 		fmt.Fprintln(d.w, "debug-transport: failed to request:", err)
 		return resp, err
@@ -44,11 +48,7 @@ func InjectDebugTransport(client *http.Client, w io.Writer) error {
 	if w == nil {
 		return errors.New("missing writer")
 	}
-	original := client.Transport
-	if original == nil {
-		original = http.DefaultTransport
-	}
-	client.Transport = &debugTransport{w: w, transport: original}
+	client.Transport = &debugTransport{w: w, transport: client.Transport}
 	return nil
 }
 
