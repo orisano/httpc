@@ -20,6 +20,12 @@ type RequestOptions struct {
 	EnforceContentLength bool
 }
 
+func (o *RequestOptions) setHeaderIfNotExists(key, value string) {
+	if len(o.Header.Get(key)) == 0 {
+		o.Header.Set(key, value)
+	}
+}
+
 type RequestOption func(*RequestOptions) error
 
 func ComposeRequestOption(opts ...RequestOption) RequestOption {
@@ -46,7 +52,7 @@ func WithBody(body io.Reader) RequestOption {
 
 func WithBinary(bin io.Reader) RequestOption {
 	return func(o *RequestOptions) error {
-		o.Header.Add("Content-Type", "application/octet-stream")
+		o.setHeaderIfNotExists("Content-Type", "application/octet-stream")
 		o.Body = bin
 		return nil
 	}
@@ -54,7 +60,7 @@ func WithBinary(bin io.Reader) RequestOption {
 
 func WithForm(params url.Values) RequestOption {
 	return func(o *RequestOptions) error {
-		o.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		o.setHeaderIfNotExists("Content-Type", "application/x-www-form-urlencoded")
 		o.Body = strings.NewReader(params.Encode())
 		return nil
 	}
@@ -62,7 +68,7 @@ func WithForm(params url.Values) RequestOption {
 
 func WithJSON(data interface{}) RequestOption {
 	return func(o *RequestOptions) error {
-		o.Header.Set("Content-Type", "application/json")
+		o.setHeaderIfNotExists("Content-Type", "application/json")
 		var b bytes.Buffer
 		if err := json.NewEncoder(&b).Encode(data); err != nil {
 			return err
@@ -74,7 +80,7 @@ func WithJSON(data interface{}) RequestOption {
 
 func WithXML(data interface{}) RequestOption {
 	return func(o *RequestOptions) error {
-		o.Header.Set("Content-Type", `application/xml; charset="UTF-8"`)
+		o.setHeaderIfNotExists("Content-Type", `application/xml; charset="UTF-8"`)
 		var b bytes.Buffer
 		b.WriteString(xml.Header)
 		if err := xml.NewEncoder(&b).Encode(data); err != nil {
