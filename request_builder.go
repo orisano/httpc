@@ -27,6 +27,10 @@ func NewRequestBuilder(rawurl string, header http.Header) (*RequestBuilder, erro
 	}, nil
 }
 
+func (b *RequestBuilder) BaseURL() *url.URL {
+	return b.baseURL
+}
+
 func (b *RequestBuilder) NewRequest(ctx context.Context, method, spath string, opts ...RequestOption) (*http.Request, error) {
 	if ctx == nil {
 		return nil, errors.New("missing ctx")
