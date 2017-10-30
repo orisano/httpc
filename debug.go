@@ -48,6 +48,11 @@ func InjectDebugTransport(client *http.Client, w io.Writer) error {
 	if w == nil {
 		return errors.New("missing writer")
 	}
+	if t := client.Transport; t != nil {
+		if _, ok := t.(*debugTransport); ok {
+			return nil
+		}
+	}
 	client.Transport = &debugTransport{w: w, transport: client.Transport}
 	return nil
 }
