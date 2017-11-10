@@ -6,7 +6,7 @@ type retryOptions struct {
 }
 
 var DefaultMaxAttempt uint = 15
-var DefaultBackoffStrategy BackoffStrategy = TruncatedExponentialBackoff(10)
+var DefaultBackoffStrategy BackoffStrategy = TruncatedExponentialBackoff(6)
 
 type retryOption func(*retryOptions)
 
