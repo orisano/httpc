@@ -11,7 +11,7 @@ import (
 var TimeNow func() time.Time = time.Now
 var TimeSleep func(d time.Duration) = time.Sleep
 
-func Retry(client *http.Client, req *http.Request, opts ...retryOption) (*http.Response, error) {
+func Retry(client *http.Client, req *http.Request, opts ...RetryOption) (*http.Response, error) {
 	if client == nil {
 		return nil, errors.New("missing client")
 	}

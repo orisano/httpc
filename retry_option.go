@@ -8,15 +8,15 @@ type retryOptions struct {
 var DefaultMaxAttempt uint = 15
 var DefaultBackoffStrategy BackoffStrategy = TruncatedExponentialBackoff(6)
 
-type retryOption func(*retryOptions)
+type RetryOption func(*retryOptions)
 
-func WithMaxAttempt(maxAttempt uint) retryOption {
+func WithMaxAttempt(maxAttempt uint) RetryOption {
 	return func(o *retryOptions) {
 		o.MaxAttempt = maxAttempt
 	}
 }
 
-func WithBackoffStrategy(strategy BackoffStrategy) retryOption {
+func WithBackoffStrategy(strategy BackoffStrategy) RetryOption {
 	return func(o *retryOptions) {
 		o.BackoffStrategy = strategy
 	}
