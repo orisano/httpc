@@ -1,6 +1,8 @@
 package httpc
 
 import (
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -38,6 +40,7 @@ func Retry(client *http.Client, req *http.Request, opts ...RetryOption) (*http.R
 			if !isTemporaryStatus(resp.StatusCode) {
 				return resp, nil
 			}
+			io.Copy(ioutil.Discard, resp.Body)
 			resp.Body.Close()
 		}
 		attempt++
