@@ -81,8 +81,7 @@ func TestInjectDebugTransport(t *testing.T) {
 
 func TestRemoveDebugTransport(t *testing.T) {
 	t.Run("NilClient", func(t *testing.T) {
-		err := RemoveDebugTransport(nil)
-		if err == nil {
+		if err := RemoveDebugTransport(nil); err == nil {
 			t.Errorf("accept nil client")
 		}
 	})
