@@ -31,12 +31,13 @@ func TestInjectDebugTransport(t *testing.T) {
 				t.Error("request body can't read")
 			} else {
 				if got := string(b); got != send {
-					t.Errorf("unexpected request body. expected: %v, got: %v", send, got)
+					t.Errorf("unexpected request body. expected: %v, but got: %v", send, got)
 				}
 			}
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, response)
 		})
+
 		s := httptest.NewServer(mux)
 		defer s.Close()
 
@@ -46,34 +47,34 @@ func TestInjectDebugTransport(t *testing.T) {
 		}
 		defer f.Close()
 
-		var b bytes.Buffer
-		InjectDebugTransport(http.DefaultClient, &b)
+		var buf bytes.Buffer
+		InjectDebugTransport(http.DefaultClient, &buf)
 		resp, err := http.Post(s.URL, "application/json", f)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer resp.Body.Close()
-		if b, err := ioutil.ReadAll(resp.Body); err != nil {
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
 			t.Errorf("response body can't read")
 		} else {
 			if got := string(b); got != response {
-				t.Errorf("unexpected response body. expected: %v, got: %v", response, got)
+				t.Errorf("unexpected response body. expected: %v, but got: %v", response, got)
 			}
 		}
-		if b.Len() == 0 {
+		if buf.Len() == 0 {
 			t.Error("dump buffer size == 0")
 		}
 	})
 	t.Run("NilClient", func(t *testing.T) {
 		var b bytes.Buffer
-		err := InjectDebugTransport(nil, &b)
-		if err == nil {
+		if err := InjectDebugTransport(nil, &b); err == nil {
 			t.Errorf("accept nil client")
 		}
 	})
 	t.Run("NilWriter", func(t *testing.T) {
-		err := InjectDebugTransport(http.DefaultClient, nil)
-		if err == nil {
+		if err := InjectDebugTransport(http.DefaultClient, nil); err == nil {
 			t.Errorf("accept nil writer")
 		}
 	})
