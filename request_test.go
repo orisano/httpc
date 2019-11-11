@@ -31,7 +31,7 @@ func TestNewRequest(t *testing.T) {
 		expected := "Test Request"
 
 		body := bytes.NewReader([]byte(expected))
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithBody(body),
 		)
 		if err != nil {
@@ -48,7 +48,7 @@ func TestNewRequest(t *testing.T) {
 		expected := "Test Binary"
 
 		body := bytes.NewReader([]byte(expected))
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithBinary(body),
 		)
 		if err != nil {
@@ -69,7 +69,7 @@ func TestNewRequest(t *testing.T) {
 		expected.Set("id", "john")
 		expected.Set("password", "dummy_password")
 
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithForm(expected),
 		)
 		if err != nil {
@@ -98,7 +98,7 @@ func TestNewRequest(t *testing.T) {
 		}
 		expectedJSON := `{"icon":"http://web.example/icons/icon.png","text":"hello from test bot"}` + "\n"
 
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithJSON(expected),
 		)
 		if err != nil {
@@ -139,7 +139,7 @@ func TestNewRequest(t *testing.T) {
 		}
 		expectedXML := xml.Header + `<User><Name>admin</Name><Email>webmaster@mail.example</Email><Age>17</Age><Weight>45.1</Weight></User>`
 
-		req, err := NewRequest(context.TODO(), http.MethodPut, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPut, rawurl,
 			WithXML(expected),
 		)
 		if err != nil {
@@ -167,7 +167,7 @@ func TestNewRequest(t *testing.T) {
 
 	t.Run("AddHeaderField", func(t *testing.T) {
 		expected := "orisano-httpc/1.0"
-		req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 			AddHeaderField("User-Agent", expected),
 		)
 		if err != nil {
@@ -183,7 +183,7 @@ func TestNewRequest(t *testing.T) {
 		expected.Add("Authentication", "Bearer xxxxxxxxxxxx-xxxxxxxxxxx-xxxxxxxxxxxx")
 		expected.Add("X-API-Version", "2017-10-26")
 
-		req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 			WithHeader(expected),
 		)
 		if err != nil {
@@ -198,7 +198,7 @@ func TestNewRequest(t *testing.T) {
 
 	t.Run("AddQuery", func(t *testing.T) {
 		expected := "3"
-		req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 			AddQuery("page", expected),
 		)
 		if err != nil {
@@ -214,7 +214,7 @@ func TestNewRequest(t *testing.T) {
 		expected.Set("utf8", "✓")
 		expected.Set("q", "Error")
 
-		req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 			WithQueries(expected),
 		)
 		if err != nil {
@@ -246,7 +246,7 @@ func TestNewRequest(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer f.Close()
-			req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 				WithBody(f),
 			)
 			if err != nil {
@@ -264,7 +264,7 @@ func TestNewRequest(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer f.Close()
-			req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 				WithBody(f),
 				EnforceContentLength,
 			)
@@ -282,7 +282,7 @@ func TestNewRequest(t *testing.T) {
 			expected := int64(len(s))
 
 			b := strings.NewReader(s)
-			req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 				WithBody(b),
 			)
 			if err != nil {
@@ -296,7 +296,7 @@ func TestNewRequest(t *testing.T) {
 		t.Run("Sizer", func(t *testing.T) {
 			expected := int64(1000)
 			b := &unreadableSizer{expected}
-			req, err := NewRequest(context.TODO(), http.MethodPut, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodPut, rawurl,
 				WithBody(b),
 				EnforceContentLength,
 			)
@@ -316,7 +316,7 @@ func TestNewRequest(t *testing.T) {
 			queries.Set("a", "1")
 			queries.Set("b", "2")
 
-			req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 				AddQuery("c", "3"),
 				WithQueries(queries),
 			)
@@ -333,7 +333,7 @@ func TestNewRequest(t *testing.T) {
 			header.Set("a", "1")
 			header.Set("b", "2")
 
-			req, err := NewRequest(context.TODO(), http.MethodGet, rawurl,
+			req, err := NewRequest(context.Background(), http.MethodGet, rawurl,
 				AddHeaderField("c", "3"),
 				WithHeader(header),
 			)
@@ -357,7 +357,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("EmptyMethod", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), "", rawurl)
+		req, err := NewRequest(context.Background(), "", rawurl)
 		if err == nil {
 			t.Errorf("accept empty method")
 		}
@@ -367,7 +367,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("InvalidMethod", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), " ", rawurl)
+		req, err := NewRequest(context.Background(), " ", rawurl)
 		if err == nil {
 			t.Error("accept invalid method")
 		}
@@ -377,7 +377,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("EmptyURL", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), http.MethodConnect, "")
+		req, err := NewRequest(context.Background(), http.MethodConnect, "")
 		if err == nil {
 			t.Errorf("accept empty url")
 		}
@@ -387,7 +387,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("InvalidURL", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), http.MethodDelete, "web.invalid",
+		req, err := NewRequest(context.Background(), http.MethodDelete, "web.invalid",
 			AddQuery("parse", "fire"),
 		)
 		if err == nil {
@@ -399,7 +399,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("UnreadableBody", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithBody(&unreadable{}),
 			EnforceContentLength,
 		)
@@ -412,7 +412,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("CantMarshalJSON", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithJSON(&cantMarshalJSON{}),
 		)
 		if err == nil {
@@ -424,7 +424,7 @@ func TestNewRequest(t *testing.T) {
 	})
 
 	t.Run("CantMarshalXML", func(t *testing.T) {
-		req, err := NewRequest(context.TODO(), http.MethodPost, rawurl,
+		req, err := NewRequest(context.Background(), http.MethodPost, rawurl,
 			WithXML(&cantMarshalXML{}),
 		)
 		if err == nil {
