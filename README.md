@@ -50,5 +50,8 @@ func main() {
 }
 ```
 
-## LICENSE
+## Author
+Nao YONASHIRO(@orisano)
+
+## License
 MIT
