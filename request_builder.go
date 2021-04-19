@@ -3,12 +3,11 @@ package httpc
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
-
-	"github.com/pkg/errors"
 )
 
 type RequestBuilder struct {
@@ -19,7 +18,7 @@ type RequestBuilder struct {
 func NewRequestBuilder(rawurl string, header http.Header) (*RequestBuilder, error) {
 	u, err := url.ParseRequestURI(rawurl)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse")
+		return nil, fmt.Errorf("parse base url: %w", err)
 	}
 	return &RequestBuilder{
 		baseURL: u,
@@ -33,10 +32,10 @@ func (b *RequestBuilder) BaseURL() *url.URL {
 
 func (b *RequestBuilder) NewRequest(ctx context.Context, method, spath string, opts ...RequestOption) (*http.Request, error) {
 	if ctx == nil {
-		return nil, errors.New("missing ctx")
+		return nil, fmt.Errorf("missing ctx")
 	}
-	if len(method) == 0 {
-		return nil, errors.New("missing method")
+	if method == "" {
+		return nil, fmt.Errorf("missing method")
 	}
 
 	u := *b.baseURL
@@ -51,7 +50,7 @@ func (b *RequestBuilder) NewRequest(ctx context.Context, method, spath string, o
 	}
 
 	if err := ApplyRequestOption(options, opts...); err != nil {
-		return nil, errors.Wrap(err, "failed to apply option")
+		return nil, fmt.Errorf("apply request option: %w", err)
 	}
 
 	u.RawQuery = options.Queries.Encode()
@@ -67,7 +66,7 @@ func (b *RequestBuilder) NewRequest(ctx context.Context, method, spath string, o
 			var b bytes.Buffer
 			n, err := io.Copy(&b, options.Body)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to read body")
+				return nil, fmt.Errorf("read request body: %w", err)
 			}
 			contentLength = n
 			options.Body = &b

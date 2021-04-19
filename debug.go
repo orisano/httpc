@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
-
-	"github.com/pkg/errors"
 )
 
 type debugTransport struct {
@@ -43,10 +41,10 @@ func (d *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func InjectDebugTransport(client *http.Client, w io.Writer) error {
 	if client == nil {
-		return errors.New("missing client")
+		return fmt.Errorf("missing client")
 	}
 	if w == nil {
-		return errors.New("missing writer")
+		return fmt.Errorf("missing writer")
 	}
 	if t := client.Transport; t != nil {
 		if _, ok := t.(*debugTransport); ok {
@@ -59,7 +57,7 @@ func InjectDebugTransport(client *http.Client, w io.Writer) error {
 
 func RemoveDebugTransport(client *http.Client) error {
 	if client == nil {
-		return errors.New("missing client")
+		return fmt.Errorf("missing client")
 	}
 	if client.Transport == nil {
 		return nil

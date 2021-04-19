@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type RequestOptions struct {
@@ -108,7 +107,7 @@ func SetHeaderField(name, value string) RequestOption {
 func WithHeader(header http.Header) RequestOption {
 	return func(o *RequestOptions) error {
 		if header == nil {
-			return errors.New("nil header")
+			return fmt.Errorf("nil header")
 		}
 		o.Header = header
 		return nil
@@ -145,7 +144,7 @@ func AddQuery(key, value string) RequestOption {
 func WithQueries(queries url.Values) RequestOption {
 	return func(o *RequestOptions) error {
 		if queries == nil {
-			return errors.New("nil queries")
+			return fmt.Errorf("nil queries")
 		}
 		o.Queries = queries
 		return nil

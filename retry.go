@@ -1,13 +1,12 @@
 package httpc
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 var TimeNow func() time.Time = time.Now
@@ -15,10 +14,10 @@ var TimeSleep func(d time.Duration) = time.Sleep
 
 func Retry(client *http.Client, req *http.Request, opts ...RetryOption) (*http.Response, error) {
 	if client == nil {
-		return nil, errors.New("missing client")
+		return nil, fmt.Errorf("missing client")
 	}
 	if req == nil {
-		return nil, errors.New("missing req")
+		return nil, fmt.Errorf("missing request")
 	}
 	options := &retryOptions{
 		MaxAttempt:      DefaultMaxAttempt,
@@ -45,7 +44,7 @@ func Retry(client *http.Client, req *http.Request, opts ...RetryOption) (*http.R
 		}
 		attempt++
 		if attempt >= options.MaxAttempt {
-			return nil, errors.New("max attempt exceeded")
+			return nil, fmt.Errorf("max attempt exceeded")
 		}
 		if err == nil && len(resp.Header.Get("Retry-After")) > 0 {
 			d, err := parseRetryAfter(resp.Header.Get("Retry-After"))
@@ -63,7 +62,7 @@ type temporary interface {
 }
 
 func isTemporary(err error) bool {
-	te, ok := errors.Cause(err).(temporary)
+	te, ok := err.(temporary)
 	return ok && te.Temporary()
 }
 
@@ -72,7 +71,7 @@ type timeout interface {
 }
 
 func isTimeout(err error) bool {
-	to, ok := errors.Cause(err).(timeout)
+	to, ok := err.(timeout)
 	return ok && to.Timeout()
 }
 
@@ -97,5 +96,5 @@ func parseRetryAfter(ra string) (time.Duration, error) {
 	if s, err := strconv.ParseUint(ra, 10, 32); err == nil {
 		return time.Duration(s) * time.Second, nil
 	}
-	return time.Duration(0), errors.Errorf("Retry-After header invalid format: %v", ra)
+	return time.Duration(0), fmt.Errorf("Retry-After header invalid format: %v", ra)
 }
